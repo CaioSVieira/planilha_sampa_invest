@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#09111d" />
+<meta name="description" content="Simulador interativo e configurável de patrimônio e fundos imobiliários, baseado na planilha Sampa Invest." />
+<title>Sampa Invest | Dashboard Patrimonial</title>
+<style>
+  :root{color-scheme:dark;--bg:#08111e;--bg2:#0c1727;--side:#0a1422;--card:#111d2d;--card2:#142236;--border:#27364b;--gold:#e1c082;--gold2:#b69053;--text:#f5f3ec;--muted:#99a8b8;--muted2:#66788d;--green:#65cdb5;--blue:#668fc9;--purple:#b4a0dc;--coral:#dc9b86;--red:#e69b9f;--radius:13px}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:radial-gradient(ellipse 55% 18% at 85% 0%,rgba(172,139,81,.085),transparent 80%),var(--bg);font-family:Inter,'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--text);font-size:14px;line-height:1.5}
+  button,input,select{font:inherit}
+  button{cursor:pointer}
+  button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+  a{text-decoration:none;color:inherit}
+  .app-shell{display:flex;min-height:100vh}
+  .sidebar{width:246px;flex:0 0 246px;background:linear-gradient(180deg,#0c1727,#0a1421);border-right:1px solid #203047;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:30px 16px 24px;z-index:3}
+  .logo{display:flex;align-items:center;gap:11px;padding:2px 12px 29px;border-bottom:1px solid #26354a}
+  .logo-mark{width:42px;height:42px;border:1px solid #b7955b;border-radius:12px;display:grid;place-items:center;color:var(--gold);font:italic bold 30px/1 Georgia,serif;background:linear-gradient(140deg,#1d2c3e,#0b1524);box-shadow:inset 0 0 0 3px rgba(225,192,130,.06)}
+  .logo-title{font-family:Georgia,serif;font-size:21px;letter-spacing:.25px;line-height:1.05}.logo-title span{color:var(--gold)}
+  .logo-caption{font-size:9px;letter-spacing:2.3px;color:#8b9cb1;margin-top:6px}
+  .nav-caption{color:#6d8298;letter-spacing:2.1px;font-size:10px;font-weight:800;text-transform:uppercase;padding:27px 15px 10px}
+  .nav-link{display:flex;align-items:center;gap:12px;padding:12px 13px;margin:2px 0;color:#9aabba;border-radius:8px;transition:.15s ease;border:1px solid transparent;font-weight:550}
+  .nav-link:hover{background:#152438;color:#f0dfbd}.nav-link.active{background:linear-gradient(90deg,rgba(225,192,130,.14),rgba(225,192,130,.025));color:var(--gold);border-color:rgba(225,192,130,.18)}
+  .nav-icon{width:17px;height:17px;flex:none;stroke:currentColor;fill:none;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+  .sidebar-bottom{margin-top:auto;padding:17px 13px 0;border-top:1px solid #26354a}
+  .status{display:flex;align-items:center;gap:8px;color:#b6c2cd;font-size:12px}.status i{width:7px;height:7px;border-radius:100%;background:var(--green);box-shadow:0 0 12px #65cdb56b}
+  .sidebar-note{color:#6d8298;font-size:11px;line-height:1.6;margin-top:9px}
+  .main{min-width:0;flex:1;padding:0 34px 64px;max-width:1720px;margin:auto}
+  .topbar{min-height:76px;display:flex;justify-content:space-between;align-items:center;gap:18px;border-bottom:1px solid #223147}
+  .eyebrow{font-size:10px;color:var(--gold);font-weight:800;letter-spacing:2.3px;text-transform:uppercase}
+  .topbar-actions{display:flex;gap:11px;align-items:center;flex-wrap:wrap}
+  .live-pill{display:inline-flex;align-items:center;gap:8px;border:1px solid #354357;border-radius:999px;padding:7px 13px;font-size:11px;color:#b9c7d4;letter-spacing:.25px}.live-pill i{width:6px;height:6px;background:var(--green);border-radius:50%}
+  .btn{border:1px solid #47516a;border-radius:8px;background:#152238;color:#f0e4c8;padding:9px 15px;display:inline-flex;justify-content:center;gap:9px;align-items:center;font-weight:650;font-size:12px;transition:.2s}
+  .btn:hover{background:#20334a;border-color:#b59968}.btn.gold{background:linear-gradient(120deg,#eed09a,#bd965b);color:#192333;border-color:#d5b680}.btn.gold:hover{filter:brightness(1.06)}
+  .section{scroll-margin-top:27px}.heading{padding:35px 0 20px;display:flex;justify-content:space-between;align-items:flex-end;gap:20px}
+  h1,h2,h3,p{margin-top:0}h1,h2,h3{letter-spacing:-.4px}h1,h2{font-family:Georgia,'Times New Roman',serif;font-weight:500}
+  h1{font-size:clamp(29px,3vw,43px);line-height:1.15;margin:9px 0 11px}h1 em{color:var(--gold);font-style:normal}
+  .heading p{color:var(--muted);margin:0;max-width:630px}.period-badge{color:var(--gold);border:1px solid #61543e;background:rgba(225,192,130,.06);padding:9px 13px;border-radius:7px;font-size:12px;white-space:nowrap}
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
+  .card{background:linear-gradient(155deg,rgba(22,36,55,.95),rgba(13,25,41,.95));border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 14px 30px rgba(0,0,0,.07);min-width:0}
+  .kpi-card{padding:21px 22px 20px;position:relative;overflow:hidden;min-height:160px}.kpi-card:after{content:"";position:absolute;width:84px;height:84px;border-radius:50%;border:1px solid rgba(225,192,130,.10);right:-43px;top:-43px}
+  .kpi-head{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#b5c0ce;font-size:12px;font-weight:550}.kpi-head svg{width:17px;height:17px;stroke:var(--gold);stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .kpi-number{font-family:Georgia,'Times New Roman',serif;font-weight:500;font-size:clamp(22px,2.2vw,34px);white-space:nowrap;letter-spacing:-.8px;margin:20px 0 9px;color:var(--text);font-variant-numeric:tabular-nums}
+  .kpi-card.featured{border-color:#92774c;background:linear-gradient(135deg,rgba(125,99,53,.23),rgba(14,27,43,.94) 78%)}.kpi-card.featured .kpi-number{color:#f3d6a0}
+  .kpi-foot{color:#92a3b2;font-size:11px}.kpi-foot .positive{color:var(--green)}
+  .section-intro{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:35px 0 14px}.section-intro h2{font-size:25px;margin:0}.section-intro p{margin:3px 0 0;color:var(--muted);font-size:12px}
+  .chart-grid{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(290px,1fr);gap:16px}
+  .panel{padding:22px;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:17px}
+  .panel h3{font-family:Georgia,serif;font-size:20px;font-weight:500;margin:0 0 5px}.panel-sub{font-size:11px;color:var(--muted);margin:0}
+  .panel-mini{color:var(--gold);font-size:11px;background:#1d2c3a;border:1px solid #48503f;border-radius:6px;padding:5px 9px;white-space:nowrap}
+  .line-chart{height:272px;width:100%;display:block;overflow:visible}.chart-legend{display:flex;gap:22px;flex-wrap:wrap;color:#a7b7c5;font-size:11px;margin:13px 0 0}
+  .dot{display:inline-block;width:9px;height:9px;background:var(--gold);border-radius:3px;margin-right:7px;vertical-align:middle}.dot.cyan{background:var(--green)}
+  .donut-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;margin:5px auto 19px}.donut{width:min(205px,70%);aspect-ratio:1;border-radius:50%;position:relative;background:conic-gradient(#e1c082 0 40%,#6b94c8 40% 73%,#64c7b3 73% 81%,#b29edd 81% 85%,#da9d8b 85% 95%,#dfb8a2 95% 100%);display:grid;place-items:center;filter:drop-shadow(0 0 13px rgba(225,192,130,.04))}
+  .donut-inner{width:73%;aspect-ratio:1;border-radius:50%;background:#131f30;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px #2f4155}
+  .donut-number{font:normal 26px Georgia,serif;color:#f4e1be}.donut-label{font-size:10px;color:#9daebe;text-transform:uppercase;letter-spacing:1.2px;text-align:center}
+  .mix-legend{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:9px 10px}.mix-legend-item{font-size:11px;color:#bac5d1;display:flex;justify-content:space-between;gap:7px}.mix-legend-item strong{color:var(--text);font-variant-numeric:tabular-nums}
+  .mix-legend-item .dot{flex:none;margin-top:4px}.legend-name{flex:1}
+  .middle-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+  .controls-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.field{display:flex;flex-direction:column;gap:7px;min-width:0}
+  .field label{font-size:11px;color:#b4c0cc;font-weight:600}.input-wrap{position:relative}.input-prefix,.input-suffix{position:absolute;top:50%;transform:translateY(-50%);color:#96a6b9;font-size:12px;pointer-events:none}.input-prefix{left:11px}.input-suffix{right:12px}
+  input[type=number],select{border:1px solid #33455a;background:#0d1929;border-radius:7px;color:var(--text);padding:10px 11px;width:100%;outline:none;min-width:0;min-height:42px;font-variant-numeric:tabular-nums}
+  input[type=number]:focus,select:focus{border-color:var(--gold2)}input.with-prefix{padding-left:34px}input.with-suffix{padding-right:32px}
+  input[type=range]{accent-color:var(--gold);width:100%;margin:8px 0 0}
+  .fieldset-note{font-size:11px;color:#8396a9;margin-top:14px;line-height:1.6}.inline-hint{color:var(--gold);font-size:11px}
+  .control-band{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;border-top:1px solid var(--border);padding-top:15px;flex-wrap:wrap}
+  .segmented{display:flex;gap:5px;background:#0c1727;border:1px solid #2f4055;border-radius:8px;padding:4px;max-width:100%;flex-wrap:wrap}
+  .segmented button{flex:1;border:0;border-radius:5px;background:transparent;color:#aabac8;padding:9px 12px;font-weight:700;font-size:11px;transition:.15s}.segmented button.active{background:#d8b77b;color:#142133}
+  .scenario-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:15px}
+  .scenario-btn{background:#0e1a2b;color:#aec0cf;border:1px solid #314156;border-radius:7px;padding:12px 5px;font-size:12px;font-weight:600;line-height:1.3}.scenario-btn small{display:block;font-size:10px;color:#8296ab;font-weight:450;margin-top:3px}.scenario-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(225,192,130,.11)}
+  .metric-strip{display:flex;align-items:center;justify-content:space-between;padding:15px;background:rgba(225,192,130,.06);border-radius:8px;border:1px solid #4e483d;gap:11px;margin-top:14px}
+  .metric-strip strong{color:var(--gold);font:normal 23px Georgia,serif;white-space:nowrap}.metric-strip span{color:#afbecb;font-size:11px}
+  .mix-filters{display:flex;flex-wrap:wrap;gap:7px;margin:3px 0 18px}.filter-chip{color:#a8b9c7;border:1px solid #314156;background:#0f1a2b;padding:8px 11px;border-radius:999px;font-size:11px}.filter-chip.active{border-color:var(--gold2);background:rgba(225,192,130,.13);color:var(--gold)}
+  .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:9px}table{border-collapse:collapse;width:100%;font-size:12px}thead{background:#18273a;color:#c6b58e}th{font-size:10px;letter-spacing:.8px;text-transform:uppercase;text-align:left;font-weight:750}td,th{padding:13px 14px;border-bottom:1px solid #293a4e;white-space:nowrap}tbody tr:last-child td{border-bottom:0}td{color:#c1ced9}td strong{color:#f5f2e8;font-weight:650}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}tbody tr.active-row{background:#4b412b40}tbody tr[data-years]{cursor:pointer}tbody tr[data-years]:hover{background:#27354a}.type-cell{display:flex;align-items:center;gap:9px}.bar-track{height:5px;border-radius:8px;background:#27364a;width:100px;overflow:hidden;display:inline-block;vertical-align:middle}.bar-fill{height:100%;border-radius:8px;background:var(--gold)}
+  .table-foot{padding-top:13px;color:#8b9eb1;font-size:11px;line-height:1.5}.divider-space{height:17px}
+  .docs-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.doc-card{padding:23px}.doc-card h3{font-size:20px;font-weight:500;font-family:Georgia,serif;margin-bottom:11px}.doc-card p,.doc-card li{color:#abbac8;font-size:12px;line-height:1.8}
+  .doc-card ul{padding-left:18px;margin:0}.doc-card strong{color:#f0e2c5;font-weight:650}.doc-card code{color:#f1d1a0;font-size:11px;background:#0a1523;padding:2px 5px;border:1px solid #304156;border-radius:4px;overflow-wrap:anywhere}
+  .formula{padding:13px 14px;background:#0b1727;border:1px solid #314053;border-radius:8px;color:#f0d7aa;font:12px/1.7 Consolas,Monaco,monospace;overflow-wrap:anywhere;margin:12px 0}.muted{color:#9dabb8}.table-note{white-space:normal}
+  .doc-card.wide{grid-column:1/-1}.profile-matrix td,.profile-matrix th{padding:12px 14px}.profile-matrix td.current{color:var(--gold);font-weight:750;background:rgba(225,192,130,.055)}
+  .source-note{background:#15243a;border-left:2px solid var(--gold);padding:13px 15px;margin-top:16px;color:#b8c6d4;font-size:12px;line-height:1.7}
+  .footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid #27374c;margin-top:42px;padding:22px 1px;color:#74879d;font-size:11px}
+  .sr-only{position:absolute;width:1px;height:1px;clip:rect(0,0,0,0);overflow:hidden}
+  @media(max-width:1230px){.main{padding:0 23px 48px}.sidebar{width:212px;flex-basis:212px}.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.chart-grid{grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr)}.kpi-number{font-size:29px}}
+  @media(max-width:900px){.sidebar{width:72px;flex-basis:72px;padding:24px 10px}.logo{padding:0 5px 22px}.logo-mark{width:39px;height:39px}.logo-name,.logo-caption,.nav-caption,.nav-label,.sidebar-bottom{display:none}.nav-link{justify-content:center;padding:13px}.nav-icon{width:21px;height:21px}.chart-grid,.middle-grid{grid-template-columns:1fr}}
+  @media(max-width:630px){.main{padding:0 15px 34px}.sidebar{width:0;flex-basis:0;overflow:hidden;padding:0;border:0}.topbar{min-height:69px}.topbar-actions{gap:6px}.live-pill{display:none}.btn{padding:9px 11px}.heading{padding-top:27px;align-items:flex-start}.period-badge{display:none}.kpi-grid{gap:9px}.kpi-card{padding:15px;min-height:132px}.kpi-head{font-size:11px}.kpi-number{font-size:clamp(18px,5vw,25px);margin:15px 0 8px}.panel{padding:17px}.donut{width:190px}.docs-grid,.controls-grid{grid-template-columns:1fr}.section-intro h2{font-size:23px}.footer{flex-direction:column}.scenario-grid{grid-template-columns:repeat(5,1fr)}.scenario-btn{font-size:11px;padding:10px 2px}td,th{padding:11px}}
+  @media print{.sidebar,.topbar-actions,.btn,.mix-filters{display:none!important}.main{padding:15px}.card{break-inside:avoid}.chart-grid,.middle-grid,.docs-grid{grid-template-columns:1fr 1fr}body{background:#08111e;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+  /* Controles avançados do simulador */
+  input[type=text]{width:100%;background:#0d1929;border:1px solid #33455a;border-radius:7px;padding:10px 11px;min-width:0;color:var(--text);min-height:42px}
+  input[type=checkbox]{accent-color:var(--gold);width:16px;height:16px}
+  .advanced{margin-top:20px;border-top:1px solid var(--border);padding-top:14px}
+  .advanced summary{color:var(--gold);cursor:pointer;font-weight:650;display:flex;justify-content:space-between;gap:10px;font-size:13px}
+  .advanced summary span{color:var(--muted);font-weight:400;font-size:10px;text-align:right}
+  .advanced-controls{margin:17px 0}
+  .microtext{font-size:11px;line-height:1.7;color:#98acbd}
+  .chart-area{position:relative}
+  .chart-tooltip{position:absolute;z-index:2;pointer-events:none;min-width:190px;background:#091423;border:1px solid #af915f;color:#e5ebf0;padding:10px 13px;border-radius:9px;box-shadow:0 12px 24px #0006;font-size:11px;white-space:pre-line}
+  .chart-tooltip strong{color:var(--gold);font-size:13px}
+  .chart-inspector{margin-top:16px;border-top:1px solid #25354b;padding-top:12px}
+  .chart-inspector label{display:flex;justify-content:space-between;color:#a8b8c8;font-size:11px}
+  .chart-inspector label strong{color:var(--gold)}
+  .scenario-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  .scenario-metrics>div{border:1px solid #314358;border-radius:8px;padding:11px;background:#0f1c2e}
+  .scenario-metrics small{display:block;font-size:10px;color:#9db0bf;margin-bottom:4px}
+  .scenario-metrics strong{display:block;color:#efd5a4;overflow-wrap:anywhere;font:18px Georgia,serif}
+  .inline-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.inline-controls input{flex:1}
+  .allocation-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+  .toggle-row{display:flex;align-items:center;gap:8px;color:#c4cfdb;font-size:12px;cursor:pointer}
+  .weight-input,.fii-rate-input{max-width:90px;text-align:right;padding:7px!important;min-height:34px!important;font-size:12px}
+  .weight-input:focus,.fii-rate-input:focus{border-color:var(--gold)}
+  .fii-rate-input:disabled{opacity:.38;cursor:not-allowed}
+  .warning{color:#efafaa!important}.ok{color:#64c7b3!important}
+  .legend-btn{background:transparent;border:1px solid transparent;border-radius:5px;padding:3px;cursor:pointer;text-align:left}.legend-btn:hover{background:#243348;border-color:#3b4d64}
+  .saved-list{display:grid;gap:10px}
+  .saved-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #2b3e51;padding:11px 14px;border-radius:8px;background:#0c1829;flex-wrap:wrap}
+  .saved-row strong{display:block;color:#eee0c4;margin-bottom:4px}
+  .saved-row span{font-size:11px;color:#9fb0c0}
+  .saved-row .btn{padding:7px 9px}
+  @media(max-width:630px){.topbar-actions .btn{font-size:10px;padding:7px}.advanced summary{flex-direction:column}.scenario-metrics{grid-template-columns:1fr 1fr}.inline-controls{align-items:stretch}.inline-controls .btn{flex:auto}}
+
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" aria-label="Menu principal">
+    <div class="logo"><div class="logo-mark" aria-hidden="true">S</div><div class="logo-name"><div class="logo-title">Sampa <span>Invest</span></div><div class="logo-caption">WEALTH STUDIO</div></div></div>
+    <div class="nav-caption">Visão geral</div>
+    <nav aria-label="Seções do dashboard">
+      <a class="nav-link active" href="#visao-geral"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span class="nav-label">Dashboard</span></a>
+      <a class="nav-link" href="#simulador"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M7 14l4-5 4 3 5-7"/></svg><span class="nav-label">Simulador</span></a>
+      <a class="nav-link" href="#cenarios"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4m8-4v4"/></svg><span class="nav-label">Cenários</span></a>
+      <a class="nav-link" href="#carteira"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6V3h8v3M3 12h18m-9 0v3"/></svg><span class="nav-label">Tipos de FII</span></a>
+      <div class="nav-caption">Planejamento</div>
+      <a class="nav-link" href="#configuracoes"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.36-6.36-2.12 2.12M7.76 16.24l-2.12 2.12m12.72 0-2.12-2.12M7.76 7.76 5.64 5.64"/><circle cx="12" cy="12" r="4"/></svg><span class="nav-label">Configurações</span></a>
+      <a class="nav-link" href="#metodologia"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M8 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2M8 3v3h8V3H8Zm0 8h8m-8 4h8"/></svg><span class="nav-label">Como funciona</span></a>
+    </nav>
+    <div class="sidebar-bottom"><div class="status"><i></i> Modelo de simulação ativo</div><div class="sidebar-note">Dados iniciais reproduzidos de Sampa_Invest(1).xlsx. Projeções ilustrativas.</div></div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div><div class="eyebrow">Sampa Invest / inteligência patrimonial</div></div><div class="topbar-actions"><span class="live-pill"><i></i> <span id="saveStatus">Simulação interativa</span></span><button class="btn" id="importBtn" type="button">↑ Importar JSON</button><input class="sr-only" id="importFile" type="file" accept=".json,application/json" aria-label="Importar simulação JSON"><button class="btn" id="jsonBtn" type="button">↓ Salvar JSON</button><button class="btn" id="resetBtn" type="button">↺ &nbsp; Restaurar</button><button class="btn gold" id="exportBtn" type="button">↧ &nbsp; Exportar CSV</button></div></header>
+
+    <section id="visao-geral" class="section">
+      <div class="heading"><div><div class="eyebrow">Sua jornada financeira</div><h1>Construa um futuro <em>extraordinário.</em></h1><p>Simule seu patrimônio, visualize dividendos e distribua seus aportes entre fundos imobiliários com uma visão clara de longo prazo.</p></div><span class="period-badge" id="periodBadge">◷ &nbsp; Horizonte de 5 anos</span></div>
+      <div class="kpi-grid" aria-live="polite">
+        <article class="card kpi-card"><div class="kpi-head"><span>Aporte mensal</span><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="15" rx="2"/><path d="M2 10h20M17 15h2"/></svg></div><div id="kpiAporte" class="kpi-number">R$ 486,30</div><div class="kpi-foot">Valor do primeiro aporte mensal</div></article>
+        <article class="card kpi-card featured"><div class="kpi-head"><span>Patrimônio projetado</span><svg viewBox="0 0 24 24"><path d="M3 19V5m0 14h18M7 15l5-5 3 3 5-7"/><path d="M16 6h4v4"/></svg></div><div id="kpiPatrimonio" class="kpi-number">R$ 40.740,71</div><div class="kpi-foot">Saldo estimado no horizonte escolhido</div></article>
+        <article class="card kpi-card"><div class="kpi-head"><span>Dividendos estimados / mês</span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.5c-1-1.4-5-1.4-6 0-2 2 4 2.5 6 4.5 1 2-2 4-6 2.5M12 6v12"/></svg></div><div id="kpiDividendos" class="kpi-number">R$ 362,59</div><div class="kpi-foot">Renda potencial sobre o saldo final</div></article>
+        <article class="card kpi-card"><div class="kpi-head"><span>Total aportado</span><svg viewBox="0 0 24 24"><path d="M4 20h16M6 16h12M8 12h8M10 8h4M12 3v2"/></svg></div><div id="kpiTotal" class="kpi-number">R$ 29.178,00</div><div class="kpi-foot"><span id="gainCaption" class="positive">R$ 11.562,71</span> de variação patrimonial projetada</div></article>
+      </div>
+      <div class="section-intro"><div><h2>Panorama do patrimônio</h2><p>Evolução estimada e composição da carteira selecionada.</p></div><span class="eyebrow">Visão consolidada</span></div>
+      <div class="chart-grid">
+        <section class="card panel"><div class="panel-head"><div><h3>Evolução patrimonial</h3><p class="panel-sub">Evolução do saldo, aportes e cenários de rendimento.</p></div><span class="panel-mini" id="growthBadge">+39,63% sobre aportes</span></div><div class="chart-area" id="chartArea"><svg class="line-chart" id="lineChart" role="img" aria-label="Gráfico de evolução patrimonial, aportes e faixas de cenários" tabindex="0"></svg><div class="chart-tooltip" id="chartTooltip" hidden></div></div><div class="chart-legend"><span><i class="dot"></i> Cenário selecionado</span><span><i class="dot cyan"></i> Total aportado</span><span><i class="dot" style="background:#bb95bd"></i> Outras hipóteses</span></div><div class="chart-inspector"><label for="inspectMonth">Explorar o gráfico: <strong id="inspectLabel">5 anos</strong></label><input id="inspectMonth" type="range" min="0" max="60" step="1" value="60"><div id="inspectSummary" class="microtext">Passe o cursor sobre o gráfico ou mova o controle para explorar cada mês.</div></div></section>
+        <section class="card panel"><div class="panel-head"><div><h3>Alocação por perfil</h3><p class="panel-sub">Distribuição sugerida entre tipos de FII.</p></div><span class="panel-mini" id="profileTopBadge">Moderado</span></div><div class="donut-wrap"><div class="donut" id="donut" role="img" aria-label="Distribuição percentual dos fundos imobiliários"><div class="donut-inner"><span class="donut-number">100%</span><span class="donut-label">da carteira</span></div></div></div><div id="mixLegend" class="mix-legend"></div></section>
+      </div>
+    </section>
+
+    <div class="section-intro" id="simulador"><div><h2>Simulador de investimentos</h2><p>Ajuste os valores e veja o patrimônio projetado mudar instantaneamente.</p></div></div>
+    <div class="middle-grid">
+      <section id="configuracoes" class="card panel section"><div class="panel-head"><div><h3>Configurações e aporte mensal</h3><p class="panel-sub">Parâmetros editáveis da planilha original.</p></div><span class="panel-mini">Parâmetros</span></div>
+        <div class="controls-grid">
+          <div class="field"><label for="salary">Salário mensal</label><div class="input-wrap"><span class="input-prefix">R$</span><input class="with-prefix" id="salary" type="number" min="0" step="1" value="1621" inputmode="decimal"></div></div>
+          <div class="field"><label for="suggestPercent">Percentual de sugestão</label><div class="input-wrap"><input class="with-suffix" id="suggestPercent" type="number" min="0" max="100" step="1" value="30"><span class="input-suffix">%</span></div></div>
+          <div class="field"><label for="yieldRate">Rendimento da carteira / mês</label><div class="input-wrap"><input class="with-suffix" id="yieldRate" type="number" min="0" max="100" step="0.001" value="0.89"><span class="input-suffix">%</span></div></div>
+          <div class="field"><label for="projectionRate">Taxa de projeção / mês</label><div class="input-wrap"><input class="with-suffix" id="projectionRate" type="number" min="0" max="100" step="0.001" value="1.079"><span class="input-suffix">%</span></div></div>
+          <div class="field"><label for="monthly">Investimento mensal</label><div class="input-wrap"><span class="input-prefix">R$</span><input class="with-prefix" id="monthly" type="number" min="0" step="0.01" value="486.3"></div></div>
+          <div class="field"><label for="years">Prazo do investimento (anos)</label><div class="input-wrap"><input id="years" type="number" min="1" max="50" step="1" value="5" aria-describedby="yearsNote"></div></div>
+        </div>
+        <details class="advanced" open><summary>Mais opções de simulação <span>Capital inicial, inflação, taxas e objetivos</span></summary>
+        <div class="controls-grid advanced-controls">
+          <div class="field"><label for="initial">Patrimônio inicial</label><div class="input-wrap"><span class="input-prefix">R$</span><input class="with-prefix" id="initial" type="number" min="0" max="1000000000" step="0.01" value="0"></div></div>
+          <div class="field"><label for="annualGrowth">Aumento dos aportes / ano</label><div class="input-wrap"><input class="with-suffix" id="annualGrowth" type="number" min="-100" max="100" step="0.1" value="0"><span class="input-suffix">%</span></div></div>
+          <div class="field"><label for="annualExtra">Aporte extra anual</label><div class="input-wrap"><span class="input-prefix">R$</span><input class="with-prefix" id="annualExtra" type="number" min="0" step="0.01" value="0"></div></div>
+          <div class="field"><label for="inflation">Inflação estimada / ano</label><div class="input-wrap"><input class="with-suffix" id="inflation" type="number" min="-20" max="100" step="0.1" value="4"><span class="input-suffix">%</span></div></div>
+          <div class="field"><label for="monthlyFee">Custos/taxas sobre saldo / mês</label><div class="input-wrap"><input class="with-suffix" id="monthlyFee" type="number" min="0" max="10" step="0.001" value="0"><span class="input-suffix">%</span></div></div>
+          <div class="field"><label for="goal">Meta patrimonial</label><div class="input-wrap"><span class="input-prefix">R$</span><input class="with-prefix" id="goal" type="number" min="0" step="1000" value="100000"></div></div>
+          <div class="field"><label for="timing">Momento dos aportes</label><select id="timing"><option value="end">Fim do mês (VF padrão)</option><option value="begin">Início do mês (VF antecipado)</option></select></div>
+          <div class="field"><label for="reinvest">Tratamento dos dividendos</label><select id="reinvest"><option value="yes">Reinvestir dividendos</option><option value="no">Receber dividendos em dinheiro</option></select></div>
+        </div>
+        <div class="microtext">Taxas, inflação e cenário são <strong>hipóteses para estudo</strong>, não previsões. O rendimento mensal informado compõe o retorno total; não é somado duas vezes.</div>
+        </details>
+        <div class="control-band"><div><div style="color:#aab8c7;font-size:11px">Aporte sugerido: <strong class="inline-hint" id="suggestedValue">R$ 486,30</strong></div><div style="color:#71879d;font-size:10px">Calculado sobre o salário informado</div></div><button class="btn" id="useSuggestion" type="button">Usar sugestão</button></div>
+      </section>
+      <section id="cenarios" class="card panel section"><div class="panel-head"><div><h3>Cenários e perfil de risco</h3><p class="panel-sub">Escolha um horizonte e uma alocação sugerida.</p></div><span class="panel-mini">5 cenários</span></div>
+        <label class="field" style="margin-bottom:8px">Horizonte de investimento</label><div class="scenario-grid" id="scenarioButtons"><button class="scenario-btn" data-y="2">02 <small>anos</small></button><button class="scenario-btn active" data-y="5">05 <small>anos</small></button><button class="scenario-btn" data-y="10">10 <small>anos</small></button><button class="scenario-btn" data-y="20">20 <small>anos</small></button><button class="scenario-btn" data-y="30">30 <small>anos</small></button></div>
+        <div class="field"><label>Perfil da carteira</label><div class="segmented" id="profileButtons" role="group" aria-label="Seleção do perfil de investidor"><button type="button" data-profile="Conservador">Conservador</button><button type="button" class="active" data-profile="Moderado">Moderado</button><button type="button" data-profile="Agressivo">Agressivo</button></div></div>
+        <div class="metric-strip"><span>Patrimônio em <strong id="horizonLabel" style="font:inherit;color:#edcf96">5 anos</strong></span><strong id="horizonValue">R$ 40.740,71</strong></div>
+        <div class="field" style="margin-top:18px"><label>Hipótese de mercado</label><div class="segmented" id="marketButtons" role="group" aria-label="Cenário de mercado"><button data-market="Pessimista" type="button">Pessimista</button><button data-market="Base" type="button" class="active">Base</button><button data-market="Otimista" type="button">Otimista</button></div></div>
+        <div class="controls-grid" style="margin-top:15px"><div class="field"><label for="downShift">Pessimista: ajuste na taxa mensal (p.p.)</label><input id="downShift" type="number" min="-10" max="10" step="0.01" value="-0.45"></div><div class="field"><label for="upShift">Otimista: ajuste na taxa mensal (p.p.)</label><input id="upShift" type="number" min="-10" max="10" step="0.01" value="0.4"></div></div>
+        <div class="scenario-metrics"><div><small>Taxa efetiva do cenário / mês</small><strong id="effectiveRate">1,079%</strong></div><div><small>Patrimônio em poder de compra atual</small><strong id="realValue">—</strong></div><div><small>Meta patrimonial</small><strong id="goalTime">—</strong></div><div><small>Dividendos recebidos até o prazo</small><strong id="withdrawnValue">—</strong></div></div>
+        <div class="field" style="margin-top:15px"><label for="snapshotName">Nome para salvar esta simulação</label><div class="inline-controls"><input id="snapshotName" type="text" maxlength="48" placeholder="Ex.: Aporte de R$ 800" value="Minha simulação"><button class="btn gold" id="saveSnapshot" type="button">＋ Salvar cenário</button></div></div>
+        <p class="fieldset-note">Os três cenários são hipóteses editáveis. Na configuração original, mudar de perfil muda a alocação, mas não a taxa global. Você pode ativar taxas específicas por FII abaixo.</p>
+      </section>
+    </div>
+
+    <div class="section-intro" id="carteira"><div><h2>Carteira de fundos imobiliários</h2><p>Percentuais e valores mensais calculados para cada tipo de FII.</p></div><span class="eyebrow" id="allocationLabel">Alocação · Moderado</span></div>
+    <section class="card panel"><div class="panel-head"><div><h3>Composição sugerida</h3><p class="panel-sub">Edite os pesos de cada perfil e, se desejar, as taxas por categoria de FII.</p></div><span class="panel-mini">Controle!C5:F22</span></div>
+      <div class="allocation-toolbar"><label class="toggle-row"><input type="checkbox" id="useFiiRates"><span>Usar retorno e dividendos individuais por tipo de FII</span></label><div class="inline-controls"><button class="btn" id="normalizeWeights" type="button">Normalizar para 100%</button><button class="btn" id="restoreWeights" type="button">Restaurar perfil</button></div></div>
+      <div class="microtext" id="rateModeNote">Taxas individuais desativadas: prevalecem os parâmetros globais. Os valores desta tabela são hipóteses editáveis.</div>
+      <div id="typeFilters" class="mix-filters" aria-label="Filtro por tipo de FII"></div>
+      <div class="table-wrap"><table><thead><tr><th>Tipo de FII</th><th>Peso (%)</th><th>Retorno mensal (%)</th><th>Dividendos mensal (%)</th><th class="num">Aporte / mês</th></tr></thead><tbody id="fiiBody"></tbody><tfoot><tr style="background:#1a293b"><td><strong>Total da carteira</strong></td><td><strong id="allocationTotalPercent">100%</strong></td><td colspan="2"><span id="weightWarning">Soma dos pesos: 100%</span></td><td class="num"><strong id="allocationTotalValue">R$ 486,30</strong></td></tr></tfoot></table></div>
+      <div class="table-foot" id="filterNote">Os percentuais representam parâmetros predefinidos na planilha, não recomendações personalizadas. A seleção de um tipo filtra apenas a visualização.</div>
+    </section>
+
+    <div class="section-intro" id="projecoes"><div><h2>Comparativo de cenários</h2><p>Quanto o aporte mensal poderia acumular em diferentes períodos.</p></div></div>
+    <section class="card panel"><div class="table-wrap"><table><thead><tr><th>Horizonte</th><th class="num">Total aportado</th><th class="num">Patrimônio projetado</th><th class="num">Dividendos / mês</th><th class="num">Ganho teórico</th></tr></thead><tbody id="scenarioBody"></tbody></table></div><div class="table-foot">Clique em uma linha para alterar o prazo. A simulação considera as premissas editadas, custos e reinvestimento escolhidos; não modela volatilidade, tributos específicos ou dados de mercado em tempo real.</div></section>
+
+    <div class="section-intro" id="comparacoes"><div><h2>Compare hipóteses</h2><p>Mesmo prazo e mesmos aportes; apenas a taxa mensal varia entre as hipóteses.</p></div><span class="eyebrow">Comparação dinâmica</span></div>
+    <section class="card panel"><div class="table-wrap"><table><thead><tr><th>Hipótese</th><th class="num">Retorno mensal</th><th class="num">Saldo final</th><th class="num">Ganho / perda</th><th class="num">Dividendos potenciais / mês</th></tr></thead><tbody id="marketBody"></tbody></table></div><div class="table-foot">Diferenças de cenários não representam probabilidades ou garantias de retorno.</div></section>
+    <div class="section-intro" id="simulacoes-salvas"><div><h2>Minhas simulações salvas</h2><p>Guarde diferentes combinações para comparar e restaurar depois, neste navegador.</p></div><span id="snapshotCount" class="eyebrow">0 salvos</span></div>
+    <section class="card panel"><div id="snapshotList" class="saved-list"><p class="microtext">Nenhum cenário salvo ainda. Edite o simulador e clique em “Salvar cenário”.</p></div></section>
+    <div class="section-intro" id="metodologia"><div><h2>Como funciona a ferramenta</h2><p>Documentação dos indicadores, fórmulas e regras extraídas da planilha original.</p></div></div>
+    <div class="docs-grid">
+      <article class="card doc-card"><h3>Perguntas que a ferramenta responde</h3><ul>
+        <li><strong>Quanto investir por mês?</strong> Em <em>Configurações</em> e no cartão <em>Aporte mensal</em>.</li>
+        <li><strong>Quanto vou acumular?</strong> No cartão <em>Patrimônio projetado</em>, no gráfico e na tabela <em>Comparativo de cenários</em>.</li>
+        <li><strong>Quanto isso geraria em dividendos?</strong> No cartão <em>Dividendos estimados/mês</em> e por horizonte na tabela.</li>
+        <li><strong>Como distribuir entre FIIs?</strong> No gráfico circular e na seção <em>Composição sugerida</em>.</li>
+        <li><strong>Como perfil e prazo mudam a visualização?</strong> Nos controles do <em>Simulador</em> e <em>Cenários</em>.</li><li><strong>Qual é o impacto da inflação, do reinvestimento e de taxas?</strong> Em <em>Mais opções</em> e nos indicadores de poder de compra e dividendos retirados.</li><li><strong>Qual hipótese é mais favorável?</strong> Em <em>Compare hipóteses</em>, com taxas ajustáveis.</li><li><strong>Quando atinjo minha meta?</strong> No campo de meta e no cartão <em>Meta patrimonial</em>.</li>
+      </ul></article>
+      <article class="card doc-card"><h3>VF: valor futuro</h3><p>O Excel usa <strong>FV</strong> (equivalente a <strong>VF</strong> em português) para acumular aportes mensais por juros compostos.</p><div class="formula">=FV(Taxa_Mensal; Qtde_Anos*12; -Aporte)</div><p>Modelo matemático:</p><div class="formula">VF = Aporte × [((1 + taxa)^meses − 1) / taxa]</div><p>Na planilha original, a função VF alimenta <strong>Sampa_APP!D25</strong>. Neste dashboard, o mesmo conceito é aplicado mês a mês para permitir capital inicial, aportes crescentes, extras, custos e saque ou reinvestimento dos dividendos. Quando essas opções estão zeradas e o aporte ocorre no fim do mês, coincide com a fórmula VF. Dividendos potenciais: <code>Saldo final × taxa de rendimento mensal</code>.</p></article>
+      <article class="card doc-card"><h3>PROCV: alocação dos FIIs</h3><p>O <strong>VLOOKUP</strong> (equivalente a <strong>PROCV</strong>) procura a combinação do perfil escolhido e tipo de FII na tabela de controle.</p><div class="formula">=VLOOKUP($C$35 &amp; "-" &amp; B39; Controle!$C:$F; 4; FALSE)</div><p>Na configuração original, <code>Moderado-TIJOLO</code> retorna <strong>40%</strong>. Ajustes de alocação feitos no dashboard não alteram o Excel. Depois, <code>D40 = C40 * $C$36</code> converte esse peso em reais. O processo se repete em <strong>C39:D44</strong>.</p></article>
+      <article class="card doc-card"><h3>Intervalos nomeados da planilha</h3><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Referência</th></tr></thead><tbody>
+        <tr><td>Aporte</td><td><code>Sampa_APP!$D$22</code></td></tr>
+        <tr><td>Patrimonio</td><td><code>Sampa_APP!$D$25</code></td></tr>
+        <tr><td>Qtde_Anos</td><td><code>Sampa_APP!$D$23</code></td></tr>
+        <tr><td>Rendimento_Carteira</td><td><code>Sampa_APP!$D$18</code></td></tr>
+        <tr><td>Salario</td><td><code>Sampa_APP!$D$17</code></td></tr>
+        <tr><td>Sugestao_Investimento</td><td><code>Sampa_APP!$D$19</code></td></tr>
+        <tr><td>Taxa_Mensal</td><td><code>Sampa_APP!$D$24</code></td></tr>
+      </tbody></table></div><p class="fieldset-note">Os sete nomes acima já constam na pasta de trabalho recebida e são reproduzidos aqui para documentar suas referências. O dashboard HTML utiliza um estado JavaScript equivalente, não cria novos nomes dentro do arquivo Excel.</p></article>
+      <article class="card doc-card wide"><div class="panel-head"><div><h3>Percentuais por perfil e origem dos parâmetros</h3><p class="panel-sub">Matriz inicial importada da aba Controle, linhas 5 a 22; os valores editados aparecem aqui.</p></div><span class="panel-mini">Base da planilha</span></div>
+        <div class="table-wrap"><table class="profile-matrix"><thead><tr><th>Tipo de FII</th><th class="num">Conservador</th><th class="num">Moderado</th><th class="num">Agressivo</th></tr></thead><tbody id="matrixBody"></tbody><tfoot><tr style="background:#19293a"><td><strong>Total</strong></td><td class="num"><strong id="matrixTotalConservador">100%</strong></td><td class="num"><strong id="matrixTotalModerado">100%</strong></td><td class="num"><strong id="matrixTotalAgressivo">100%</strong></td></tr></tfoot></table></div>
+        <div class="source-note"><strong>Origem e interpretação:</strong> os percentuais foram inseridos manualmente na aba <code>Controle!F5:F22</code> da planilha fornecida. Não são calculados a partir de cotações, dados de mercado, rentabilidade histórica nem pesquisa externa. Da mesma forma, as taxas mensais de 0,89% e 1,079% são premissas editáveis, não retornos garantidos. Taxas por tipo de FII e diferenças entre hipóteses são parâmetros hipotéticos acrescentados apenas para o simulador, não importados de dados de mercado. A sugestão de aporte parte de <code>D19 = D17 * 30%</code>.</div>
+      </article>
+    </div>
+    <article class="card doc-card" style="margin-top:15px"><h3>Como a simulação ampliada calcula os resultados</h3><p><strong>Retorno total mensal:</strong> taxa de projeção (global ou média ponderada por FII) mais ou menos o ajuste da hipótese de mercado. O rendimento de dividendos é uma <strong>parte</strong> desse retorno e nunca é adicionado novamente. <strong>Reinvestir:</strong> todo o retorno total entra no saldo. <strong>Receber em dinheiro:</strong> a parcela de dividendos é registrada como retirada, reduzindo a taxa de crescimento do saldo; as distribuições acumuladas são exibidas separadamente.</p><p><strong>Aportes:</strong> incluem capital inicial, mensalidades escalonadas a cada ano e extra anual. <strong>Custos:</strong> percentual debitado do saldo a cada mês. <strong>Inflação:</strong> descontada apenas para informar poder de compra, não subtraída duas vezes do saldo nominal. Se a soma dos pesos for diferente de 100%, o cálculo utiliza pesos proporcionais normalizados e exibe alerta. As configurações ficam salvas localmente neste navegador, e podem ser exportadas/importadas por JSON.</p><p>Este estudo não inclui preços reais, risco de mercado variável ao longo do tempo, taxas administrativas internas de cada fundo, impostos específicos ou garantia de proventos.</p></article>
+    <footer class="footer"><span>© Sampa Invest · Dashboard de simulação baseado no arquivo Sampa_Invest(1).xlsx</span><span>Uso educacional e ilustrativo · Não constitui recomendação de investimento</span></footer>
+  </main>
+</div>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const names=['Papel','Tijolo','Híbridos','FOFs','Desenvolvimento','Hotelarias'];
+const colors=['#6b94c8','#e1c082','#64c7b3','#b29edd','#da9d8b','#dfb8a2'];
+const defaultWeights={Conservador:[30,45,15,10,0,0],Moderado:[33,40,8,4,10,5],Agressivo:[45,10,10,5,20,10]};
+const profiles=Object.keys(defaultWeights);
+const initialState={salary:1621,suggestPercent:30,yieldRate:0.89,projectionRate:1.079,monthly:486.3,years:5,profile:'Moderado',type:'Todos',initial:0,annualGrowth:0,annualExtra:0,inflation:4,monthlyFee:0,goal:100000,timing:'end',reinvest:'yes',useFiiRates:false,market:'Base',downShift:-0.45,upShift:0.4,weights:defaultWeights,fiiReturns:[1.079,1.079,1.079,1.079,1.079,1.079],fiiYields:[.89,.89,.89,.89,.89,.89]};
+const limits={salary:[0,1e9],suggestPercent:[0,100],yieldRate:[0,20],projectionRate:[-20,20],monthly:[0,1e9],years:[1,50],initial:[0,1e11],annualGrowth:[-100,100],annualExtra:[0,1e9],inflation:[-20,100],monthlyFee:[0,10],goal:[0,1e12],downShift:[-10,10],upShift:[-10,10]};
+const clone=x=>JSON.parse(JSON.stringify(x));
+const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
+const cleanNum=(value,fallback=0,a=-1e12,b=1e12)=>{let n=Number(value);return Number.isFinite(n)?clamp(n,a,b):fallback};
+const cash=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:2,minimumFractionDigits:2});
+const money=n=>Number.isFinite(n)?cash.format(n):'—';
+const compact=n=>!Number.isFinite(n)?'—':Math.abs(n)>=1e9?'R$ '+(n/1e9).toLocaleString('pt-BR',{maximumFractionDigits:1})+' bi':Math.abs(n)>=1e6?'R$ '+(n/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi':Math.abs(n)>=1000?'R$ '+(n/1000).toLocaleString('pt-BR',{maximumFractionDigits:0})+' mil':money(n);
+const percent=n=>Number.isFinite(n)?n.toLocaleString('pt-BR',{maximumFractionDigits:3})+'%':'—';
+const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let state=clone(initialState),snapshots=[],inspection=0;
+const storageKey='sampa-invest-simulador-v3';
+const allowedMarkets=['Pessimista','Base','Otimista'];
+function sanitizeState(raw){
+ const s=clone(initialState);if(!raw || typeof raw!=='object')return s;
+ for(const [k,[min,max]] of Object.entries(limits))s[k]=cleanNum(raw[k],s[k],min,max);
+ s.years=Math.round(s.years);
+ if(profiles.includes(raw.profile))s.profile=raw.profile;
+ if(['Todos',...names].includes(raw.type))s.type=raw.type;
+ if(['end','begin'].includes(raw.timing))s.timing=raw.timing;
+ if(['yes','no'].includes(raw.reinvest))s.reinvest=raw.reinvest;
+ if(allowedMarkets.includes(raw.market))s.market=raw.market;
+ s.useFiiRates=raw.useFiiRates===true;
+ for(const profile of profiles){if(raw.weights && Array.isArray(raw.weights[profile]) && raw.weights[profile].length===6){s.weights[profile]=raw.weights[profile].map((n,i)=>cleanNum(n,defaultWeights[profile][i],0,100));}}
+ for(const [key,min,max] of [['fiiReturns',-20,20],['fiiYields',0,20]]){if(Array.isArray(raw[key])&&raw[key].length===6)s[key]=raw[key].map((n,i)=>cleanNum(n,s[key][i],min,max));}
+ return s;
+}
+function store(){try{localStorage.setItem(storageKey,JSON.stringify({state,snapshots}));$('saveStatus').textContent='Alterações guardadas no navegador';}catch(e){$('saveStatus').textContent='Simulação local';}}
+function restore(){try{const raw=JSON.parse(localStorage.getItem(storageKey)||'null');if(raw){state=sanitizeState(raw.state);if(Array.isArray(raw.snapshots))snapshots=raw.snapshots.slice(0,15).filter(s=>s && typeof s==='object' && typeof s.name==='string' && s.state).map(s=>({name:s.name.slice(0,48),date:String(s.date||''),state:sanitizeState(s.state)}));}}catch(e){}
+}
+const annualDeposit=m=>state.monthly*Math.pow(Math.max(0,1+state.annualGrowth/100),Math.floor((m-1)/12));
+const suggested=()=>state.salary*state.suggestPercent/100;
+function sumWeights(){return state.weights[state.profile].reduce((a,b)=>a+b,0);}
+function normalizedWeights(){const w=state.weights[state.profile],sum=w.reduce((a,b)=>a+b,0);return sum>0?w.map(n=>n/sum):[0,0,0,0,0,0];}
+function scenarioParameters(which='Base'){
+ const weights=normalizedWeights();
+ const base=(state.useFiiRates&&sumWeights()>0)?state.fiiReturns.reduce((acc,r,i)=>acc+r*weights[i],0):state.projectionRate;
+ const y=(state.useFiiRates&&sumWeights()>0)?state.fiiYields.reduce((acc,r,i)=>acc+r*weights[i],0):state.yieldRate;
+ const shift=which==='Pessimista'?state.downShift:which==='Otimista'?state.upShift:0;
+ return {monthlyRate:clamp(base+shift,-99,100)/100,yieldRate:y/100,displayRate:clamp(base+shift,-99,100)};
+}
+// Um período representa exatamente um mês. O retorno total já contém o componente de dividendos.
+function simulate(years=state.years,market=state.market){
+ const months=Math.round(years*12),{monthlyRate,yieldRate,displayRate}=scenarioParameters(market);
+ let balance=state.initial,invested=state.initial,withdrawn=0,distributedMonth=0;
+ const rows=[{month:0,balance,invested,withdrawn,dividend:balance*yieldRate,nominalGain:0,real:balance}];
+ for(let m=1;m<=months;m++){
+  let aporte=annualDeposit(m);
+  if(state.timing==='begin'){balance+=aporte;invested+=aporte;}
+  const grossDiv=Math.max(0,balance)*yieldRate;
+  const fee=Math.max(0,balance)*state.monthlyFee/100;
+  balance=Math.max(0,balance+balance*monthlyRate-fee-(state.reinvest==='no'?grossDiv:0));
+  if(state.reinvest==='no')withdrawn+=grossDiv;
+  distributedMonth=grossDiv;
+  if(state.timing==='end'){balance+=aporte;invested+=aporte;}
+  if(m%12===0){balance+=state.annualExtra;invested+=state.annualExtra;}
+  if(!Number.isFinite(balance)||balance>1e18)balance=1e18;
+  if(!Number.isFinite(invested)||invested>1e18)invested=1e18;
+  if(!Number.isFinite(withdrawn)||withdrawn>1e18)withdrawn=1e18;
+  rows.push({month:m,balance,invested,withdrawn,dividend:balance*yieldRate,nominalGain:balance+withdrawn-invested,real:balance/Math.pow(1+state.inflation/100,m/12)});
+ }
+ return {rows,last:rows[months],rate:displayRate,yield:yieldRate,withdrawn,distributedMonth};
+}
+function goalTime(){
+ if(state.goal<=state.initial)return 'Já alcançada';
+ if(state.goal<=0)return 'Defina uma meta';
+ const rows=simulate(50).rows;const hit=rows.find(r=>r.balance>=state.goal);
+ if(!hit)return 'Acima de 50 anos';
+ const years=Math.floor(hit.month/12),months=hit.month%12;
+ return [years?`${years} ${years===1?'ano':'anos'}`:'',months?`${months} ${months===1?'mês':'meses'}`:''].filter(Boolean).join(' e ')||'Agora';
+}
+function syncInputs(){
+ for(const key of Object.keys(limits)){const el=$(key);if(el)el.value=state[key];}
+ ['timing','reinvest'].forEach(key=>$(key).value=state[key]);
+ $('useFiiRates').checked=state.useFiiRates;
+}
+function drawChart(results){
+ const svg=$('lineChart'),W=740,H=272,L=76,T=12,R=15,B=34,plotW=W-L-R,plotH=H-T-B,months=state.years*12;
+ const curves={Pessimista:results.Pessimista.rows,Base:results.Base.rows,Otimista:results.Otimista.rows};
+ const rows=results[state.market].rows;
+ const maximum=Math.max(1,state.initial,...Object.values(curves).map(c=>c[c.length-1].balance),rows[rows.length-1].invested);
+ const ymax=maximum*1.10;
+ const x=m=>L+m/months*plotW,y=v=>T+plotH-clamp(v/ymax,0,1)*plotH;
+ let guides='';
+ for(let i=0;i<5;i++){const val=ymax*i/4,yy=y(val);guides+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#29384d" stroke-dasharray="4 6"/><text x="${L-10}" y="${yy+4}" text-anchor="end" font-size="11" fill="#8d9fb2">${compact(val)}</text>`;}
+ for(let k=0;k<=4;k++){const year=Math.round(state.years*k/4);guides+=`<text x="${x(year*12)}" y="${H-7}" text-anchor="middle" font-size="11" fill="#8d9fb2">${year} a</text>`;}
+ const path=(rr,key)=>rr.filter((_,i)=>i%Math.max(1,Math.floor(rr.length/650))===0||i===rr.length-1).map((p,i)=>(i?'L':'M')+x(p.month).toFixed(1)+' '+y(p[key]).toFixed(1)).join(' ');
+ const selected=path(rows,'balance');
+ const area=selected+`L${x(months).toFixed(1)} ${y(0).toFixed(1)}L${x(0).toFixed(1)} ${y(0).toFixed(1)}Z`;
+ let extra='';for(const name of allowedMarkets.filter(n=>n!==state.market)){extra+=`<path d="${path(curves[name],'balance')}" fill="none" stroke="#bb95bd" stroke-width="1.5" stroke-opacity=".68" stroke-dasharray="3 5"/>`}
+ const idx=clamp(inspection,0,months),highlight=rows[idx];
+ svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+ svg.innerHTML=`<defs><linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e1c082" stop-opacity=".24"/><stop offset="1" stop-color="#e1c082" stop-opacity="0"/></linearGradient></defs>${guides}<path d="${area}" fill="url(#balanceGradient)"/>${extra}<path d="${path(rows,'invested')}" fill="none" stroke="#64c7b3" stroke-width="2" stroke-dasharray="6 5"/><path d="${selected}" fill="none" stroke="#e1c082" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><line x1="${x(idx)}" x2="${x(idx)}" y1="${T}" y2="${y(0)}" stroke="#af915f" stroke-dasharray="3 4"/><circle cx="${x(idx)}" cy="${y(highlight.balance)}" r="5" fill="#e1c082" stroke="#152438" stroke-width="3"/><rect x="${L}" y="${T}" width="${plotW}" height="${plotH}" fill="transparent"/>`;
+ $('inspectMonth').max=months;$('inspectMonth').value=idx;
+ const yy=Math.floor(idx/12),mm=idx%12;
+ $('inspectLabel').textContent=(yy?`${yy} ${yy===1?'ano':'anos'}`:'')+(mm?` ${mm} ${mm===1?'mês':'meses'}`:'')||'Início';
+ $('inspectSummary').textContent=`Patrimônio ${money(highlight.balance)} · aportado ${money(highlight.invested)} · poder de compra ${money(highlight.real)}`;
+}
+function drawDonut(){
+ const weights=state.weights[state.profile],sum=sumWeights(),effective=normalizedWeights();let pos=0;
+ const grad=effective.map((v,i)=>{const from=pos*100;pos+=v;return v?`${colors[i]} ${from.toFixed(4)}% ${(pos*100).toFixed(4)}%`:null}).filter(Boolean);
+ $('donut').style.background=grad.length?`conic-gradient(${grad.join(',')})`:'#28374c';
+ $('donut').setAttribute('aria-label',`${state.profile}: `+names.map((n,i)=>`${n} ${percent(weights[i])}`).join(', '));
+ $('donut').querySelector('.donut-number').textContent=percent(sum);
+ $('mixLegend').innerHTML=names.map((n,i)=>`<button type="button" data-type="${n}" class="mix-legend-item legend-btn" title="Filtrar ${n}"><i class="dot" style="background:${colors[i]}"></i><span class="legend-name">${n}</span><strong>${percent(weights[i])}</strong></button>`).join('');
+ $('profileTopBadge').textContent=state.profile;
+}
+function drawFii(){
+ const weights=state.weights[state.profile],sum=sumWeights();
+ $('typeFilters').innerHTML=['Todos',...names].map(n=>`<button class="filter-chip ${n===state.type?'active':''}" data-type="${n}" aria-pressed="${n===state.type}" type="button">${n==='Todos'?'Todos os tipos':n}</button>`).join('');
+ $('fiiBody').innerHTML=names.map((n,i)=>({n,i})).filter(({n})=>state.type==='Todos'||state.type===n).map(({n,i})=>`<tr><td><div class="type-cell"><i class="dot" style="background:${colors[i]};margin:0"></i><strong>${n}</strong></div></td><td><input class="weight-input" type="number" min="0" max="100" step="0.1" value="${weights[i]}" data-weight="${i}" aria-label="Peso de ${n} em porcentagem"></td><td><input class="fii-rate-input" type="number" min="-20" max="20" step="0.001" value="${state.fiiReturns[i]}" data-fii-return="${i}" aria-label="Retorno mensal de ${n}" ${state.useFiiRates?'':'disabled'}></td><td><input class="fii-rate-input" type="number" min="0" max="20" step="0.001" value="${state.fiiYields[i]}" data-fii-yield="${i}" aria-label="Dividendo mensal de ${n}" ${state.useFiiRates?'':'disabled'}></td><td class="num"><strong>${money(state.monthly*weights[i]/100)}</strong></td></tr>`).join('');
+ $('allocationTotalPercent').textContent=percent(sum);
+ $('allocationTotalValue').textContent=money(state.monthly*sum/100);
+ $('allocationLabel').textContent=`Alocação · ${state.profile}`;
+ $('weightWarning').textContent=Math.abs(sum-100)<.005?'Distribuição integral':'Pesos devem somar 100%';
+ $('weightWarning').className=Math.abs(sum-100)<.005?'ok':'warning';
+ $('filterNote').textContent=`${state.type==='Todos'?'Mostrando a carteira completa.':`Filtro visual: ${state.type}. Os demais tipos permanecem na carteira.`} ${Math.abs(sum-100)<.005?'Todos os percentuais estão distribuídos.':`A soma atual é ${percent(sum)}. Para simular, os pesos são normalizados proporcionalmente; use “Normalizar para 100%” para corrigir.`}`;
+ $('rateModeNote').textContent=state.useFiiRates?'Taxas por FII ATIVAS: patrimônio e dividendos usam médias ponderadas pelas participações do perfil. Os números são hipóteses configuráveis, não dados de mercado.':'Taxas por FII DESATIVADAS: patrimônio usa a taxa global e a alteração de perfil não muda a rentabilidade até que você ative esta opção.';
+}
+function drawScenarios(){
+ const y=[2,5,10,20,30];if(!y.includes(state.years))y.push(state.years);
+ y.sort((a,b)=>a-b);
+ $('scenarioBody').innerHTML=y.map(year=>{const s=simulate(year).last;return `<tr data-years="${year}" tabindex="0" class="${year===state.years?'active-row':''}" title="Selecionar ${year} anos"><td><strong>${year} anos ${year===state.years?'✦':''}</strong></td><td class="num">${money(s.invested)}</td><td class="num"><strong>${money(s.balance)}</strong></td><td class="num">${money(s.dividend)}</td><td class="num" style="color:${s.nominalGain>=0?'#83d1bc':'#e69b9f'}">${money(s.nominalGain)}</td></tr>`;}).join('');
+ $('scenarioButtons').querySelectorAll('[data-y]').forEach(b=>{const active=Number(b.dataset.y)===state.years;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
+}
+function drawMarketTable(results){
+ $('marketBody').innerHTML=allowedMarkets.map(name=>{const x=results[name],last=x.last;return `<tr class="${state.market===name?'active-row':''}" data-market-row="${name}" tabindex="0" title="Selecionar cenário ${name}"><td><strong>${name} ${state.market===name?'✦':''}</strong></td><td class="num">${percent(x.rate)}</td><td class="num"><strong>${money(last.balance)}</strong></td><td class="num">${money(last.nominalGain)}</td><td class="num">${money(last.dividend)}</td></tr>`;}).join('');
+ $('marketButtons').querySelectorAll('[data-market]').forEach(b=>{const active=b.dataset.market===state.market;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
+}
+function drawMatrix(){
+ profiles.forEach(pr=>{const id='matrixTotal'+pr;if($(id))$(id).textContent=percent(state.weights[pr].reduce((a,b)=>a+b,0));});
+ $('matrixBody').innerHTML=names.map((name,i)=>`<tr><td><strong>${name}</strong></td>${profiles.map(pr=>`<td class="num ${pr===state.profile?'current':''}">${percent(state.weights[pr][i])}</td>`).join('')}</tr>`).join('');
+}
+function drawSnapshots(){
+ $('snapshotCount').textContent=`${snapshots.length} ${snapshots.length===1?'salvo':'salvos'}`;
+ if(!snapshots.length){$('snapshotList').innerHTML='<p class="microtext">Nenhum cenário salvo ainda. Edite o simulador e clique em “Salvar cenário”.</p>';return;}
+ $('snapshotList').innerHTML=snapshots.map((x,i)=>{const current=state;let value=0;try{state=x.state;value=simulate(x.state.years).last.balance;}finally{state=current;}return `<div class="saved-row"><div><strong>${escapeHTML(x.name)}</strong><span>${escapeHTML(x.date)} · ${x.state.profile} · ${x.state.years} anos · ${money(x.state.monthly)}/mês · <b style="color:#e1c082">Patrimônio ${money(value)}</b></span></div><div class="inline-controls"><button class="btn" type="button" data-load="${i}">Aplicar</button><button class="btn" type="button" data-remove="${i}" aria-label="Excluir ${escapeHTML(x.name)}">Excluir</button></div></div>`;}).join('');
+}
+function render(){
+ const results={};for(const k of allowedMarkets)results[k]=simulate(state.years,k);
+ const selected=results[state.market],last=selected.last,gain=last.nominalGain;
+ $('kpiAporte').textContent=money(state.monthly);
+ $('kpiPatrimonio').textContent=money(last.balance);
+ $('kpiDividendos').textContent=money(last.dividend);
+ $('kpiTotal').textContent=money(last.invested);
+ $('gainCaption').textContent=money(gain);
+ $('gainCaption').className=gain>=0?'positive':'warning';
+ $('suggestedValue').textContent=money(suggested());
+ $('periodBadge').textContent=`◷ Horizonte de ${state.years} anos`;
+ $('horizonLabel').textContent=`${state.years} anos`;
+ $('horizonValue').textContent=money(last.balance);
+ $('growthBadge').textContent=last.invested?`${percent(100*gain/last.invested)} sobre aportes`:'Sem aportes';
+ $('effectiveRate').textContent=percent(selected.rate);
+ $('realValue').textContent=money(last.real);
+ $('goalTime').textContent=goalTime();
+ $('withdrawnValue').textContent=money(last.withdrawn);
+ $('years').value=String(state.years);
+ $('profileButtons').querySelectorAll('[data-profile]').forEach(b=>{const active=b.dataset.profile===state.profile;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
+ drawChart(results);drawDonut();drawFii();drawScenarios();drawMatrix();drawMarketTable(results);drawSnapshots();
+ store();
+}
+function selectMonth(v){inspection=clamp(Math.round(v),0,state.years*12);drawChart({Pessimista:simulate(state.years,'Pessimista'),Base:simulate(state.years,'Base'),Otimista:simulate(state.years,'Otimista')});}
+function selectionChanged(){inspection=state.years*12;render();}
+function setType(n){if(['Todos',...names].includes(n)){state.type=n;render();}}
+function download(file,content,mime){const blob=new Blob([content],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
+function csvExport(){
+ const r=simulate(state.years),head=['Mes','Ano','Aporte acumulado (R$)','Patrimonio nominal (R$)','Patrimonio real (R$)','Dividendos potenciais mensais (R$)','Dividendos retirados acumulados (R$)','Ganho economico (R$)','Perfil','Hipotese','Retorno mensal (%)'];
+ const lines=[head,...r.rows.map(d=>[d.month,(d.month/12).toFixed(2),d.invested,d.balance,d.real,d.dividend,d.withdrawn,d.nominalGain,state.profile,state.market,r.rate])];
+ download('sampa_invest_simulacao_mensal.csv','\ufeff'+lines.map(row=>row.map(v=>'"'+String(typeof v==='number'?v.toFixed(2).replace('.',','):v).replace(/"/g,'""')+'"').join(';')).join('\r\n'),'text/csv;charset=utf-8;');
+}
+function attach(){
+ const numberKeys=['salary','suggestPercent','yieldRate','projectionRate','monthly','initial','annualGrowth','annualExtra','inflation','monthlyFee','goal','downShift','upShift'];
+ for(const k of numberKeys){$(k).addEventListener('input',e=>{if(e.target.value==='')return;const [a,b]=limits[k];const n=Number(e.target.value);if(!Number.isFinite(n))return;state[k]=clamp(n,a,b);render();});$(k).addEventListener('change',()=>{$(k).value=state[k];});}
+ $('years').addEventListener('change',e=>{state.years=clamp(Math.round(Number(e.target.value)||state.years),1,50);selectionChanged();});
+ for(const k of ['timing','reinvest'])$(k).addEventListener('change',e=>{state[k]=e.target.value;render();});
+ $('useFiiRates').addEventListener('change',e=>{state.useFiiRates=e.target.checked;render();});
+ $('scenarioButtons').addEventListener('click',e=>{const b=e.target.closest('[data-y]');if(b){state.years=+b.dataset.y;selectionChanged();}});
+ $('profileButtons').addEventListener('click',e=>{const b=e.target.closest('[data-profile]');if(b){state.profile=b.dataset.profile;render();}});
+ $('marketButtons').addEventListener('click',e=>{const b=e.target.closest('[data-market]');if(b){state.market=b.dataset.market;render();}});
+ $('typeFilters').addEventListener('click',e=>{const b=e.target.closest('[data-type]');if(b)setType(b.dataset.type);});
+ $('mixLegend').addEventListener('click',e=>{const b=e.target.closest('[data-type]');if(b){setType(b.dataset.type);$('carteira').scrollIntoView({behavior:'smooth'});}});
+ $('fiiBody').addEventListener('change',e=>{
+  const input=e.target,n=Number(input.value);let key,index,min,max;
+  if(input.dataset.weight!==undefined){key='weights';index=+input.dataset.weight;min=0;max=100;}
+  else if(input.dataset.fiiReturn!==undefined){key='fiiReturns';index=+input.dataset.fiiReturn;min=-20;max=20;}
+  else if(input.dataset.fiiYield!==undefined){key='fiiYields';index=+input.dataset.fiiYield;min=0;max=20;}
+  else return;
+  if(key==='weights')state.weights[state.profile][index]=cleanNum(n,0,min,max);
+  else state[key][index]=cleanNum(n,0,min,max);
+  render();
+ });
+ $('normalizeWeights').addEventListener('click',()=>{
+  const weight=state.weights[state.profile],sum=sumWeights();
+  if(sum===0){alert('Informe pelo menos um peso maior que zero para normalizar a carteira.');return;}
+  const raw=weight.map(w=>w/sum*10000),units=raw.map(Math.floor);let remaining=10000-units.reduce((a,b)=>a+b,0);const priority=[0,1,2,3,4,5].sort((a,b)=>(raw[b]-units[b])-(raw[a]-units[a]));for(let j=0;j<remaining;j++)units[priority[j%6]]++;for(let i=0;i<6;i++)weight[i]=units[i]/100;render();
+ });
+ $('restoreWeights').addEventListener('click',()=>{state.weights[state.profile]=clone(defaultWeights[state.profile]);render();});
+ for(const [table,selector,key,callback] of [['scenarioBody','[data-years]','years',(n)=>{state.years=+n;selectionChanged();}],['marketBody','[data-market-row]','market-row',(n)=>{state.market=n;render();}]]){
+  const fn=e=>{const tr=e.target.closest(selector);if(!tr)return;if(e.type==='keydown'){if(e.key!=='Enter'&&e.key!==' ')return;e.preventDefault();}callback(tr.dataset[key==='market-row'?'marketRow':key]);};
+  $(table).addEventListener('click',fn);$(table).addEventListener('keydown',fn);
+ }
+ $('useSuggestion').addEventListener('click',()=>{state.monthly=Math.round(suggested()*100)/100;$('monthly').value=state.monthly;render();});
+ $('resetBtn').addEventListener('click',()=>{if(!confirm('Restaurar os valores originais da planilha? As simulações já salvas serão mantidas.'))return;state=clone(initialState);syncInputs();selectionChanged();});
+ $('saveSnapshot').addEventListener('click',()=>{
+  const name=$('snapshotName').value.trim().slice(0,48)||`Simulação ${snapshots.length+1}`;
+  if(snapshots.length>=15){alert('Limite de 15 simulações salvas. Exclua uma antes de adicionar outra.');return;}
+  snapshots.unshift({name,date:new Date().toLocaleDateString('pt-BR'),state:clone(state)});render();
+ });
+ $('snapshotList').addEventListener('click',e=>{
+  let b=e.target.closest('[data-load]');if(b){state=clone(snapshots[+b.dataset.load].state);syncInputs();selectionChanged();$('visao-geral').scrollIntoView({behavior:'smooth'});return;}
+  b=e.target.closest('[data-remove]');if(b){snapshots.splice(+b.dataset.remove,1);render();}
+ });
+ $('exportBtn').addEventListener('click',csvExport);
+ $('jsonBtn').addEventListener('click',()=>download('sampa_invest_configuracoes.json',JSON.stringify({format:'sampa-invest-v3',state,snapshots},null,2),'application/json;charset=utf-8'));
+ $('importBtn').addEventListener('click',()=>$('importFile').click());
+ $('importFile').addEventListener('change',async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{if(file.size>2e6)throw new Error('Arquivo muito grande');const raw=JSON.parse(await file.text());if(raw.format!=='sampa-invest-v3'||!raw.state)throw new Error('Formato inválido');state=sanitizeState(raw.state);snapshots=Array.isArray(raw.snapshots)?raw.snapshots.slice(0,15).filter(s=>s&&typeof s.name==='string'&&s.state).map(s=>({name:s.name.slice(0,48),date:String(s.date||''),state:sanitizeState(s.state)})):[];syncInputs();selectionChanged();}catch(err){alert('Não foi possível importar o arquivo JSON: '+err.message);}finally{e.target.value='';}});
+ $('inspectMonth').addEventListener('input',e=>selectMonth(+e.target.value));
+ const svg=$('lineChart');
+ svg.addEventListener('mousemove',e=>{
+  const rect=svg.getBoundingClientRect(),ratio=(e.clientX-rect.left)/rect.width,month=clamp(Math.round((ratio*740-76)/(740-76-15)*state.years*12),0,state.years*12);
+  selectMonth(month);
+  const value=simulate(state.years).rows[month],tip=$('chartTooltip'),area=$('chartArea').getBoundingClientRect();
+  tip.innerHTML=`<strong>Mês ${month}</strong>\nSaldo: ${money(value.balance)}\nAportado: ${money(value.invested)}\nDividendos potenciais: ${money(value.dividend)}`;
+  tip.hidden=false;tip.style.left=Math.min(Math.max(0,e.clientX-area.left+12),Math.max(0,area.width-208))+'px';tip.style.top=Math.max(0,e.clientY-area.top-75)+'px';
+ });
+ svg.addEventListener('mouseleave',()=>{$('chartTooltip').hidden=true;});
+ svg.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();selectMonth(inspection+(e.key==='ArrowRight'?1:-1));}});
+ document.querySelectorAll('.nav-link').forEach(a=>a.addEventListener('click',()=>{document.querySelectorAll('.nav-link').forEach(b=>b.classList.remove('active'));a.classList.add('active');}));
+}
+restore();syncInputs();attach();inspection=state.years*12;render();
+})();
+
+</script>
+</body>
+</html>
